@@ -5,7 +5,9 @@ import { useNavigate } from 'react-router-dom';
 function PostAuction() {
   const [itemName, setItemName] = useState('');
   const [description, setDescription] = useState('');
-  const [startingBid, setStartingBid] = useState(0);
+  const [startingBid, setStartingBid] = useState();
+  const [openingBid, setOpeningBid] = useState();
+  const [closingBid, setClosingBid] = useState();
   const [closingTime, setClosingTime] = useState('');
   const navigate = useNavigate();
 
@@ -27,8 +29,8 @@ function PostAuction() {
 
     try {
       await axios.post(
-        'http://localhost:5001/auction',
-        { itemName, description, startingBid, closingTime },
+        'http://localhost:5001/auction', // Make sure this matches your backend route
+        { itemName, description, startingBid, openingBid, closingBid, closingTime },
         { headers: { Authorization: `Bearer ${token}` } } // Send token in headers
       );
 
@@ -60,7 +62,21 @@ function PostAuction() {
           type="number"
           placeholder="Starting Bid"
           value={startingBid}
-          onChange={(e) => setStartingBid(e.target.value)}
+          onChange={(e) => setStartingBid(Number(e.target.value))}
+          required
+        />
+        <input
+          type="number"
+          placeholder="Opening Bid"
+          value={openingBid}
+          onChange={(e) => setOpeningBid(Number(e.target.value))}
+          required
+        />
+        <input
+          type="number"
+          placeholder="Closing Bid"
+          value={closingBid}
+          onChange={(e) => setClosingBid(Number(e.target.value))}
           required
         />
         <input

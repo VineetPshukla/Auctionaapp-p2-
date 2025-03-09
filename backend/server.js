@@ -11,7 +11,6 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-
 // MongoDB connection
 mongoose
   .connect('mongodb://127.0.0.1:27017/admin', {
@@ -28,6 +27,20 @@ const UserSchema = new mongoose.Schema({
 });
 
 const User = mongoose.model('User', UserSchema);
+
+// Auction Schema & Model
+const auctionSchema = new mongoose.Schema({
+  itemName: { type: String, required: true },
+  description: { type: String, required: true },
+  startingBid: { type: Number, required: true },
+  openingBid: { type: Number, required: true },
+  closingBid: { type: Number, required: true },
+  closingTime: { type: Date, required: true },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  createdAt: { type: Date, default: Date.now },
+});
+
+const Auction = mongoose.model('Auction', auctionSchema);
 
 // Signup Route
 app.post('/signup', async (req, res) => {
@@ -80,9 +93,9 @@ app.post('/signin', async (req, res) => {
   }
 });
 
-// Protected Route Example
+// Authentication Middleware
 const authMiddleware = (req, res, next) => {
-  const token = req.header('Authorization');
+  const token = req.header('Authorization')?.split(' ')[1];
   if (!token) {
     return res.status(401).json({ message: 'Access denied' });
   }
@@ -96,8 +109,47 @@ const authMiddleware = (req, res, next) => {
   }
 };
 
+// Protected Route Example
 app.get('/protected', authMiddleware, (req, res) => {
   res.json({ message: 'Protected data', user: req.user });
+});
+
+// Auction Post Route (Fixed)
+app.post('/auction', authMiddleware, async (req, res) => {
+  try {
+    const { itemName, description, startingBid, openingBid, closingBid, closingTime } = req.body;
+
+    // Validate input
+    if (!itemName || !description || !startingBid || !openingBid || !closingBid || !closingTime) {
+      return res.status(400).json({ error: 'All fields are required' });
+    }
+
+    const newAuction = new Auction({
+      itemName,
+      description,
+      startingBid,
+      openingBid,
+      closingBid,
+      closingTime,
+      userId: req.user.userId, // Fix: Use `req.user.userId` instead of `req.user.id`
+    });
+
+    await newAuction.save();
+    res.status(201).json({ message: 'Auction created successfully', auction: newAuction });
+  } catch (error) {
+    console.error('Error posting auction:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+app.get('/auctions', async (req, res) => {
+  try {
+    const auctions = await Auction.find();
+    res.json(auctions);
+  } catch (error) {
+    console.error('❌ Error fetching auctions:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 const PORT = process.env.PORT || 5001;

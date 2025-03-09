@@ -20,7 +20,9 @@ function Dashboard() {
   const fetchItems = async () => {
     try {
       const res = await axios.get('http://localhost:5001/auctions');
+      console.log('Fetched Auctions:', res.data); 
       setItems(res.data);
+
     } catch (error) {
       console.error('Error fetching auctions:', error);
     }
@@ -32,21 +34,7 @@ function Dashboard() {
     nav('/signin');
   };
 
-  // 🔹 Handle Auction Post
-  const handlePostAuction = async (e) => {
-    e.preventDefault();
-    if (!newAuction.itemName || !newAuction.startingBid) {
-      alert('Please enter item name and starting bid!');
-      return;
-    }
-    try {
-      const res = await axios.post('http://localhost:5001/auctions', newAuction);
-      setItems([...items, res.data]); // Update UI instantly
-      setNewAuction({ itemName: '', startingBid: '' }); // Reset form
-    } catch (error) {
-      console.error('Error posting auction:', error);
-    }
-  };
+ 
 
   // 🔹 Handle Delete Auction
   const handleDelete = async (id) => {
@@ -74,30 +62,8 @@ function Dashboard() {
       </div>
 
       {/* 🔹 Add Auction Form */}
-      <div className="mt-6 bg-white p-6 rounded-lg shadow-lg">
-        <h3 className="text-xl font-bold mb-4">Post a New Auction</h3>
-        <form onSubmit={handlePostAuction} className="flex gap-3">
-          <input
-            type="text"
-            placeholder="Item Name"
-            value={newAuction.itemName}
-            onChange={(e) => setNewAuction({ ...newAuction, itemName: e.target.value })}
-            className="border p-2 rounded-lg w-1/3"
-            required
-          />
-          <input
-            type="number"
-            placeholder="Starting Bid ($)"
-            value={newAuction.startingBid}
-            onChange={(e) => setNewAuction({ ...newAuction, startingBid: e.target.value })}
-            className="border p-2 rounded-lg w-1/3"
-            required
-          />
-          <button type="submit" className="bg-green-500 px-4 py-2 rounded-lg text-white hover:bg-green-600">
-            Post Auction
-          </button>
-        </form>
-      </div>
+      
+    
 
       {/* 🔹 Auction List */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-6">
